@@ -157,6 +157,11 @@ class ControllerSetupLogic
 
         window.addEventListener("gamepadconnected", function (e)
         {
+            if (typeof (e.gamepad) == "undefined")
+            {
+                console.log("gamepad api does not have permission");
+                return;
+            }
             console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.", e.gamepad.index, e.gamepad.id, e.gamepad.buttons.length, e.gamepad.axes.length);
             let pad = new PlayerGamePad(e.gamepad);
 
@@ -170,6 +175,11 @@ class ControllerSetupLogic
 
         window.addEventListener("gamepaddisconnected", function (e)
         {
+            if (typeof (e.gamepad) == "undefined")
+            {
+                console.log("gamepad api does not have permission");
+                return;
+            }
             console.log("Gamepad disconnected from index %d: %s", e.gamepad.index, e.gamepad.id);
 
             scope.DisconnectGamePad(e.gamepad);
