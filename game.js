@@ -179,7 +179,7 @@ class Game
     StartMatch()
     {
         this.winner = "";
-        this.readycount = 1;
+        this.readycount =3;
         this.bullets = [];
         this.teamScore = [0, 0];
         for (var i = 0; i < this.players.length; i++)
