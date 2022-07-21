@@ -20,7 +20,7 @@ class Renderer
         g.font = this.font;
         g.fillStyle = "red";
 
-        
+
         this.renderUi(g, this.game.controllerSetupLogic.setupControllerUI);
         this.renderUi(g, this.game.controllerSetupLogic.setupControllerDynaUI);
     }
@@ -50,6 +50,16 @@ class Renderer
                 }
             }
             g.drawImage(sprites, use[0], use[1], use[2], use[3], x, 100, use[2], use[3]);
+
+
+            if (i < players.length && players[i].ready)
+            {
+                let text = "Ready!";
+
+                let m = g.measureText(text);
+                g.fillText(text, (x + (use[2] / 2)) - (m.width / 2), 100 + 30);
+
+            }
             if (i < players.length)
             {
                 let p = players[i];
@@ -152,6 +162,15 @@ class Renderer
             g.drawImage(sprites, p.sprite[0], p.sprite[1], p.sprite[2], p.sprite[3], -p.r.W2(), -p.r.H2(), p.r.w, p.r.h);
             g.setTransform(1, 0, 0, 1, 0, 0);
             g.fillText("P" + (i + 1), p.r.x, p.r.y);
+            for (var ci = 0; ci < p.charge.length; ci++)
+            {
+                let c = p.charge[ci];
+                if (c.hidden == false)
+                {
+                    g.drawImage(sprites, c.sprite[0], c.sprite[1], c.sprite[2], c.sprite[3], c.r.x,c.r.y, c.r.w, c.r.h);
+
+                }
+            }
             //g.scale(1, 1);
         }
 
@@ -164,7 +183,12 @@ class Renderer
         if (this.game.readycount > 0)
         {
             g.font = this.bigfont;
-            g.fillText("READY? " + Math.ceil(this.game.readycount), this.game.screen.W2(), this.game.screen.H2());
+
+            let text = "READY? " + Math.ceil(this.game.readycount);
+
+            let m = g.measureText(text);
+            g.fillText(text, this.game.screen.W2() - (m.width / 2), this.game.screen.H2());
+
         }
         let x = 30;
         g.font = this.font;
@@ -204,7 +228,11 @@ class Renderer
 
         let use = spriteSheet["icons"][playertype]["playerframeopen"];
         g.drawImage(sprites, use[0], use[1], use[2], use[3], this.game.screen.W2() - (use[2] / 2), 10, use[2], use[3]);
-        g.fillText("Winner " + this.game.winner, this.game.screen.W2() - (use[2] / 2), 20);
+
+        let text = "Winner " + this.game.winner;
+
+        let m = g.measureText(text);
+        g.fillText(text, this.game.screen.W2() - (m.width / 2), 10 + use[3] + 30);
         this.renderUi(g, this.game.winUI);
     }
 }

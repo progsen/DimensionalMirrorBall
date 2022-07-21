@@ -305,7 +305,7 @@ class PlayerGamePad
         {
             if (this.gp.id == "keyboard")
             {
-                json = '[{"button":3,"name":"attack / ok"},{"button":12,"name":"jump / cancel"},{"button":56,"name":"up"},{"button":52,"name":"down"},{"button":34,"name":"left"},{"button":37,"name":"rigth"}]';
+                json = '[{"button":57,"name":"attack / ok"},{"button":59,"name":"jump / cancel"},{"button":18,"name":"up"},{"button":20,"name":"down"},{"button":17,"name":"left"},{"button":19,"name":"rigth"}]';
                 localStorage.setItem("gamepadcfg" + this.gp.id, json);
                 this.buttons = JSON.parse(json);
                 this.setupComplete = true;

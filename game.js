@@ -162,10 +162,12 @@ class Game
     keydown(e)
     {
         this.keyboard.setKeyState(true, e.which);
+        e.cancelBubble = true;
     }
     keyup(e)
     {
         this.keyboard.setKeyState(false, e.which);
+        e.cancelBubble = true;
     }
 
     ResetGame()
@@ -184,10 +186,6 @@ class Game
         {
             playSound(this.spawnBuffer, this.audioContext);
             this.players[i].SpawnIn(this.spawnPointsTeam);
-            //    this.players[i].score = 0;
-            //    this.players[i].deaths = 0;
-            //    this.players[i].stock = 3;
-            //    this.players[i].knockedOut = false;
 
         }
         this.state = ingameScreen;
@@ -299,8 +297,7 @@ class Game
 
         p.vY = this.players.length % 2 ? 1 : -1;
 
-        p.playertype = p.vY == -1 ? "player2" : "player";
-        p.syncAnim();
+        p.SetPlayerType();
 
         p.SpawnIn(this.spawnPointsTeam);
     }
@@ -352,7 +349,7 @@ class Game
             }
 
         }
-        return  this.players.length >= 2;
+        return this.players.length >= 2;
     }
     acceleratePlayer(p, gp, frametime)
     {
@@ -383,12 +380,12 @@ class Game
             }
             p.animation = "jump";
             p.syncAnim();
-            console.log("accelJumpVerticalg");
+            //console.log("accelJumpVerticalg");
             p.accelJumpVertical(frametime);
         }
         else
         {
-            console.log("accelVertical " + gp.IsPressed(gp.jump) + " " + p.canJump);
+            //console.log("accelVertical " + gp.IsPressed(gp.jump) + " " + p.canJump);
             p.accelVertical(frametime);
 
         }
@@ -509,10 +506,17 @@ class Game
                 {
                     p.bulletCharge = p.maxbulletCharge;
                 }
+                if (p.bulletCharge >= 1)
+                {
+                    p.SetChargeHidden ( false);
+                    p.ChargeLogic(frametime);
+                }
             }
 
             if (gp.IsPressed(gp.attack) == false && p.bulletCharge > 0)
             {
+                p.SetChargeHidden ( true);
+                p.ChargeLogic(frametime);
                 this.SpawnBullet(p);
             }
             if (p.bulletCool > 0)
@@ -584,9 +588,19 @@ class Game
     SpawnBullet(p)
     {
         playSound(this.fireBuffer, this.audioContext);
-        let size = 16 * (1+ Math.floor(p.bulletCharge));
-        console.log("spawnbullet" + size);
-        let bullet = new Bullet(p.r.CX() - (size / 2), p.r.CY() - (size / 2), size, size, spriteSheet["bullet"][p.playertype], p.vY, p.bulletCharge);
+        let type = (1 + Math.floor(p.bulletCharge));
+        let size = 16;
+        if (type == 2)
+        {
+            size = 32;
+        }
+        if (type == 3)
+        {
+            size = 64;
+        }
+        console.log("spawnbullet" + size + " " + type);
+        let sprite = size + p.playertype; console.log(sprite);
+        let bullet = new Bullet(p.r.CX() - (size / 2), p.r.CY() - (size / 2), size, size, spriteSheet["bullet"][sprite], p.vY, p.bulletCharge);
         bullet.owner = p;
         this.bullets.push(bullet);
         p.bulletCool = 0.4;

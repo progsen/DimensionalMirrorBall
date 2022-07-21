@@ -11,9 +11,17 @@ let spriteSheet = {
         "jump": [65, 97, 64, 64],
         "hit": [129, 97, 64, 64],
     },
+    "charge": {
+        "player": [23, 0, 6, 6],
+        "player2": [23, 8, 6, 6],
+    },
     "bullet": {
-        "player": [47, 0, 16, 16],
-        "player2": [87, 0, 16, 16],
+        "16player": [47, 0, 16, 16],
+        "16player2": [87, 0, 16, 16],
+        "32player": [214, 0, 32, 32],
+        "32player2": [278, 0, 32, 32],
+        "64player": [199, 37, 64, 64],
+        "64player2": [276, 37, 64, 64],
     },
     "bg": [0, 200, 800, 200],
     "title": [1200, 0, 800, 400],
@@ -75,13 +83,73 @@ class Rect
 }
 
 
+class Charge
+{
+    constructor(dx, dy, w, h, player)
+    {
+        this.sprite = spriteSheet["charge"][player.playertype];
+        this.r = new Rect(-900, 0, w, h);
+        this.relR = new Rect(-900, 0, w, h);
+        this.player = player;
+        this.hidden = true;
+        this.dx = dx;
+        this.dy = dy;
+    }
+
+    ChargeLogic(frametime)
+    {
+        if (this.hidden == false)
+        {
+            if (this.relR.x == -900)
+            {
+                this.relR.x = -this.dx * 32;
+                this.relR.y = -this.dy * 32;
+
+                //console.log("set start " + this.relR.x + " " + this.relR.y + " " + this.dx + " " + this.dy);
+            }
+
+
+            this.relR.x += this.dx * 200 * frametime;
+            this.relR.y += this.dy * 200 * frametime;
+
+            this.r.x = this.relR.x + this.player.r.CX();
+            this.r.y = this.relR.y + this.player.r.CY();
+
+
+            if (
+                (this.dx < 0 && this.relR.x < 0) ||//-1 dx rtol  
+                (this.dx > 0 && this.relR.x > 0) ||//1 dx ltor 
+                (this.dy < 0 && this.relR.y < 0) ||
+                (this.dy > 0 && this.relR.y > 0)
+            )
+            {
+                this.relR.x = -900;
+
+            }
+        }
+        else
+        {
+            this.relR.x = -900;
+        }
+    }
+}
 class Player
 {
+    SetPlayerType()
+    {
+
+        this.playertype = this.vY == -1 ? "player2" : "player";
+        this.syncAnim();
+        for (var i = 0; i < this.charge.length; i++)
+        {
+            this.charge[i].sprite = spriteSheet["charge"][this.playertype];
+
+        }
+    }
 
     constructor(gamepad)
     {
         this.ready = false;
-
 
         this.gamepad = gamepad;
         this.gamepad.boundPlayer = this;
@@ -97,6 +165,14 @@ class Player
         this.maxYSpeed = 30;
         this.vY = 1;
         this.playertype = "player";
+        this.charge = [
+
+            new Charge(1, 1, 6, 6, this),
+            new Charge(-1, 1, 6, 6, this),
+            new Charge(1, -1, 6, 6, this),
+            new Charge(-1, -1, 6, 6, this)
+
+        ];
         this.score = 0;
         this.stock = 3;
         this.deaths = 0;
@@ -107,6 +183,22 @@ class Player
         this.deathTimer = 0;
         this.syncAnim();
         this.knockedOut = false;
+    }
+    SetChargeHidden(hidden)
+    {
+        for (var i = 0; i < this.charge.length; i++)
+        {
+            this.charge[i].hidden = hidden;
+
+        }
+    }
+    ChargeLogic(frametime)
+    {
+        for (var i = 0; i < this.charge.length; i++)
+        {
+            this.charge[i].ChargeLogic(frametime);
+
+        }
     }
     Died()
     {
@@ -184,7 +276,7 @@ class Player
         }
         else
         {
-            return this.r.y >= plat.r.Bottom() ;
+            return this.r.y >= plat.r.Bottom();
 
         }
     }
