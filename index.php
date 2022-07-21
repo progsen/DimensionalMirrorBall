@@ -12,5 +12,5 @@
 header("Feature-Policy:gamepad * https://javd.hosts2.ma-cloud.nl");
 
 header("Permissions-Policy: gamepad * https://javd.hosts2.ma-cloud.nl");
-include "index.html"
+include "localhostonly.html"
 ?>
