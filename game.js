@@ -53,7 +53,7 @@ class Game
     constructor()
     {
         this.gamePads = [];
-        this.state = setupScreen;
+        this.state = startScreen;
         this.canvas = document.getElementById("canvas");
         this.g = canvas.getContext('2d');
         let scope = this;
@@ -91,6 +91,7 @@ class Game
         this.screen = new Rect(0, 0, this.canvas.width, this.canvas.height);
         this.setupMatchUI = [new UIClickable(this.screen.w - 100, this.screen.h - 50, 100, 50, null, "gray", "Controllers", function () { scope.GotoControllerSetup(); })];
         this.winUI = [new UIClickable(this.screen.w - 100, this.screen.h - 50, 100, 50, null, "gray", "Controllers", function () { scope.ResetGame(); })];
+        this.startUI = [new UIClickable(this.screen.W2(), this.screen.H2() + 100, 100, 50, null, "gray", "Start", function () { scope.GotoMatchSetup(); })];
 
         this.LoadLevel();
 
@@ -139,6 +140,7 @@ class Game
 
         switch (this.state)
         {
+            case startScreen: this.CheckUiClick(this.startUI, e); break;
             case setupScreen: this.CheckUiClick(this.setupMatchUI, e); break;
             //case ingameScreen: this.CheckUiClick(this.setupControllerUI,e);break;
             case winScreen: this.CheckUiClick(this.winUI, e); break;
@@ -193,13 +195,12 @@ class Game
     LoadLevel()
     {
         let platform = spriteSheet["icons"]["platform"]
-        let h2 = this.canvas.height / 2;
-        this.borders = [
 
-            new Platform(0, -160, this.canvas.width, 160, platform),
-            new Platform(0, this.canvas.height, this.canvas.width, 160, platform),
-            new Platform(-160, 0, 160, this.canvas.height, platform),
-            new Platform(this.canvas.width, 0, 160, this.canvas.height, platform)];
+
+        this.borders = [
+            new Platform(-160, -1000, 160, this.canvas.height + 2000, platform),
+            new Platform(this.canvas.width, -1000, 160, this.canvas.height + 2000, platform)
+        ];
 
         this.alwaysPlatforms = [
             new Platform(0, (this.canvas.height / 2) - (platform[3] / 2), this.canvas.width, platform[3], platform),
@@ -210,50 +211,41 @@ class Game
         for (var i = 0; i < this.borders.length; i++)
         {
             this.platforms.push(this.borders[i]);
-
         }
+
         for (var i = 0; i < this.alwaysPlatforms.length; i++)
         {
             this.platforms.push(this.alwaysPlatforms[i]);
-
         }
 
         this.spawnPointsTeam = [[], []];
 
-        //this.platforms.push(new Platform(0, h2 - 50, 200, platform[3], platform));
-        //this.platforms.push(new Platform(0, h2 + 50, 200, platform[3], platform));
 
-        let platcount = 0;
         for (var i = 0; i < this.canvas.width; i += 100)
         {
-
-            if (Math.random() < 0.5 && platcount < 4)
-            {
-                platcount++;
-                //let rng = (1 + Math.floor(Math.random() * 1)) * 64
-                let height = platform[3];
-                //if (Math.random() < 0.5)
-                //{
-                //    height = 64;
-                //}
-                let ptop = new Platform(i, this.alwaysPlatforms[0].r.y - 64 - platform[3], 100, height, platform);
-                let pbottom = new Platform(i, this.alwaysPlatforms[0].r.Bottom() + 64 , 100, height, platform);
-
-                this.platforms.push(ptop);
-                this.platforms.push(pbottom);
-
-                this.spawnPointsTeam[0].push(new Rect(i, ptop.r.y - 64, 1, 1));
-                this.spawnPointsTeam[1].push(new Rect(i, pbottom.r.Bottom(), 1, 1));
-            }
-            else
-            {
-                this.spawnPointsTeam[0].push(new Rect(i, this.alwaysPlatforms[0].r.y - 64, 1, 1));
-                this.spawnPointsTeam[1].push(new Rect(i, this.alwaysPlatforms[0].r.Bottom(), 1, 1));
-
-            }
+            this.spawnPointsTeam[0].push(new Rect(i, this.alwaysPlatforms[0].r.y - 64, 1, 1));
+            this.spawnPointsTeam[1].push(new Rect(i, this.alwaysPlatforms[0].r.Bottom(), 1, 1));
         }
+
+        this.MakeMirroredPlatforms(0, 128, 100, platform[3], platform)
+
+        this.MakeMirroredPlatforms(100, 64, 100, platform[3], platform)
+        this.MakeMirroredPlatforms(600, 64, 100, platform[3], platform)
+        this.MakeMirroredPlatforms(700, 128, 100, platform[3], platform)
     }
 
+    MakeMirroredPlatforms(x, y, w, h, platform)
+    {
+
+        let ptop = new Platform(x, this.alwaysPlatforms[0].r.y - y - platform[3], w, h, platform);
+        let pbottom = new Platform(x, this.alwaysPlatforms[0].r.Bottom() + y, w, h, platform);
+
+        this.platforms.push(ptop);
+        this.platforms.push(pbottom);
+
+        this.spawnPointsTeam[0].push(new Rect(x, ptop.r.y - 64, 1, 1));
+        this.spawnPointsTeam[1].push(new Rect(x, pbottom.r.Bottom(), 1, 1));
+    }
 
     SetupAudio()
     {
@@ -294,15 +286,23 @@ class Game
                 {
                     this.gamePads[i].setupbuttontimeout = buttonI;
                     let p = new Player(this.gamePads[i]);
-                    p.vY = this.players.length % 2 ? 1 : -1;
-                    p.playertype = p.vY == -1 ? "player2" : "player";
-                    p.syncAnim();
+                    this.InitPlayer(p);
 
                     console.log("added player for " + gp.index + " " + this.players.length);
                     this.players.push(p);
                 }
             }
         }
+    }
+    InitPlayer(p)
+    {
+
+        p.vY = this.players.length % 2 ? 1 : -1;
+
+        p.playertype = p.vY == -1 ? "player2" : "player";
+        p.syncAnim();
+
+        p.SpawnIn(this.spawnPointsTeam);
     }
     ResetPlayers()
     {
@@ -317,31 +317,18 @@ class Game
         {
             let oldP = copy[i];
             let p = new Player(oldP.gamepad);
-            p.vY = this.players.length % 2 ? 1 : -1;
-
-            p.playertype = p.vY == -1 ? "player2" : "player";
-            p.syncAnim();
-
-            p.SpawnIn(this.spawnPointsTeam);
+            this.InitPlayer(p);
             console.log("added player for " + oldP.gamepad.index + " " + this.players.length);
             this.players.push(p);
         }
     }
     setupLogic()
     {
-
         for (var i = 0; i < this.players.length; i++)
         {
             let gp = this.players[i].gamepad;
             if (gp != null)
             {
-                //if (gp.setupComplete == false)
-                //{
-                //    console.log("BindCurrentButton");
-                //    gp.BindCurrentButton();
-                //}
-                //else if (this.players[i].ready == false)
-                //{
                 if (gp.IsPressed(gp.ok))
                 {
                     this.players[i].ready = true;
@@ -350,7 +337,6 @@ class Game
                         this.StartMatch();
                     }
                 }
-                //}
             }
         }
 
@@ -366,7 +352,7 @@ class Game
             }
 
         }
-        return this.players.length >= 2;
+        return  this.players.length >= 2;
     }
     acceleratePlayer(p, gp, frametime)
     {
@@ -393,6 +379,7 @@ class Game
             {
 
                 playSound(this.jumpBuffer, this.audioContext);
+                p.v[1] = 0;
             }
             p.animation = "jump";
             p.syncAnim();
@@ -401,6 +388,7 @@ class Game
         }
         else
         {
+            console.log("accelVertical " + gp.IsPressed(gp.jump) + " " + p.canJump);
             p.accelVertical(frametime);
 
         }
@@ -409,7 +397,7 @@ class Game
     {
         this.acceleratePlayer(p, gp, frametime);
         p.setNextPosH();
-        let hitsH = p.CollectHits(this.platforms);
+        let hitsH = p.CollectHits(this.borders);
         if (hitsH.length > 0)
         {
             if (p.v[0] > 0)
@@ -429,35 +417,67 @@ class Game
 
         p.setNextPosV();
         let hitsV = p.CollectHits(this.platforms);
-        if (hitsV.length > 0)
-        {
-            if (p.IsJumping() == false)
-            {
-                p.canJump = true;
+        //if (hitsV.length > 0)
+        //{
+        //    if (p.IsJumping() == false)
+        //    {
+        //        p.canJump = true;
 
-                p.animation = "stand";
-                p.syncAnim();
+        //        p.animation = "stand";
+        //        p.syncAnim();
+        //    }
+        //    else
+        //    {
+        //        p.canJump = false;
+        //    }
+        //    if (p.v[1] > 0)//falling
+        //    {
+
+        //        p.r.y = hitsV[0].r.y - p.r.h;
+        //    }
+        //    else//jumping
+        //    {
+        //        p.r.y = hitsV[0].r.Bottom();
+        //    }
+        //    p.v[1] = 0;
+        //}
+        //else
+        //{
+        //    console.log("p jumping " + p.vY + " " + p.v[1] + " " + p.IsJumping());
+        //    p.Commit();
+        //}
+
+
+        if (p.IsJumping() == false)//falling
+        {
+            p.animation = "stand";
+            p.syncAnim();
+            let lowerplatforms = p.CollectBelow(this.platforms)
+            let hitsV = p.CollectHits(lowerplatforms);
+            if (hitsV.length > 0)
+            {
+                if (p.vY == 1)
+                {
+                    p.r.y = hitsV[0].r.y - p.r.h;
+                }
+                else
+                {
+                    p.r.y = hitsV[0].r.Bottom();
+                }
+                p.canJump = true;
+                p.v[1] = 0;
             }
             else
             {
-                p.canJump = false;
+                p.Commit();
             }
-            if (p.v[1] > 0)
-            {
-                p.r.y = hitsV[0].r.y - p.r.h;
-            }
-            else
-            {
-                p.r.y = hitsV[0].r.Bottom();
-            }
-            p.v[1] = 0;
         }
-        else
+        else//jumping
         {
             p.Commit();
         }
-
     }
+
     ingameLogic()
     {
         //console.log("ingameLogic");
@@ -563,9 +583,10 @@ class Game
     }
     SpawnBullet(p)
     {
-        console.log("spawnbullet");
         playSound(this.fireBuffer, this.audioContext);
-        let bullet = new Bullet(p.r.CX() - 8, p.r.CY() - 8, 16, 16, spriteSheet["bullet"][p.playertype], p.vY, p.bulletCharge);
+        let size = 16 * (1+ Math.floor(p.bulletCharge));
+        console.log("spawnbullet" + size);
+        let bullet = new Bullet(p.r.CX() - (size / 2), p.r.CY() - (size / 2), size, size, spriteSheet["bullet"][p.playertype], p.vY, p.bulletCharge);
         bullet.owner = p;
         this.bullets.push(bullet);
         p.bulletCool = 0.4;
@@ -576,10 +597,15 @@ class Game
     {
 
     }
+    startLogic()
+    {
+
+    }
     logic()
     {
         switch (this.state)
         {
+            case startScreen: this.startLogic(); this.renderer.renderStart(); break;
             case setupScreen: this.setupLogic(); this.renderer.renderSetup(); break;
             case ingameScreen: this.ingameLogic(); this.renderer.renderFrame(); break;
             case winScreen: this.winLogic(); this.renderer.renderWin(); break;

@@ -16,6 +16,7 @@ let spriteSheet = {
         "player2": [87, 0, 16, 16],
     },
     "bg": [0, 200, 800, 200],
+    "title": [1200, 0, 800, 400],
     "icons": {
         "thinplatform": [0, 25, 16, 3],
         "platform": [22, 25, 16, 8],
@@ -161,7 +162,32 @@ class Player
         this.nextR.x = this.r.x + this.v[0];
 
     }
+    CollectBelow(platforms)
+    {
+        let lowerplatforms = [];
+        for (var i = 0; i < platforms.length; i++)
+        {
+            let pl = platforms[i];
+            if (this.IsObjectBelow(pl))
+            {
+                lowerplatforms.push(pl);
+            }
 
+        }
+        return lowerplatforms;
+    }
+    IsObjectBelow(plat)
+    {
+        if (this.vY == 1)
+        {
+            return this.r.Bottom() <= plat.r.y;
+        }
+        else
+        {
+            return this.r.y >= plat.r.Bottom() ;
+
+        }
+    }
     CollectHits(platforms)
     {
         let hits = [];
@@ -292,7 +318,7 @@ class Bullet
         this.maxYSpeed = 30;
         this.r = new Rect(x, y, w, h);
         this.speedY = 20;
-        this.charge = charge * 0.66;
+        this.charge = 0.2;// charge * 0.66;
     }
     accelVertical(frametime)
     {

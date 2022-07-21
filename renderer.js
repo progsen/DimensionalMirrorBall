@@ -56,8 +56,9 @@ class Renderer
                 let gp = p.gamepad;
                 if (gp.setupComplete == false)
                 {
-                    g.fillText("Gamepad not configured", x, 50);
-                    g.fillText(gp.gp.id, x, 60);
+                    g.fillText("Gamepad not configured", x, 70);
+                    g.fillText(gp.gp.id, x, 80);
+                    g.fillText("Click the controllers button to config", x, 90);
                     //let msg = gp.buttons[gp.setupI].name;
                     ////g.textAlign = "center";
                     //g.fillText("press button for " + msg, x, 50);
@@ -66,13 +67,22 @@ class Renderer
             x += use[2] + 60;
 
         }
+
+        this.renderUi(g, this.game.setupMatchUI);
+    }
+    renderStart()
+    {
+        let g = this.g;
+        let sprites = this.sprites;
+        let use = spriteSheet["title"];
+        g.drawImage(sprites, use[0], use[1], use[2], use[3], 0, 0, use[2], use[3]);
         g.fillStyle = "yellow";
         g.font = this.bigfont;
         g.fillText("DimensionalMirrorBall", 10, 50);
 
-        this.renderUi(g, this.game.setupMatchUI);
-    }
+        this.renderUi(g, this.game.startUI);
 
+    }
     renderUi(g, setupMatchUI)
     {
         for (var i = 0; i < setupMatchUI.length; i++)
@@ -84,7 +94,8 @@ class Renderer
                 g.fillStyle = ui.color;
                 g.fillRect(ui.r.x, ui.r.y, ui.r.w, ui.r.h);
                 g.fillStyle = "white";
-                g.fillText(ui.text, ui.r.x+10, ui.r.y + 10);
+                let m = g.measureText(ui.text);
+                g.fillText(ui.text, ui.r.CX() - (m.width / 2), ui.r.CY() - (m.actualBoundingBoxAscent / 2));
             }
 
         }
