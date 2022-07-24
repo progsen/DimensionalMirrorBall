@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        canvas {
+            padding: 2px;
+        }
+
+        body {
+            background-color: black;
+        }
+
+        .help {
+            color: white;
+        }
+    </style>
+
+    <!--<script src="jquery-3.6.0.min.js" type="text/javascript"></script>-->
+    <script src="gameobjects.js" type="text/javascript"></script>
+    <script src="controllers.js" type="text/javascript"></script>
+    <script src="game.js" type="text/javascript"></script>
+    <script src="renderer.js" type="text/javascript"></script>
+</head>
+<body onload="entryPoint()">
+    <canvas id="canvas"></canvas>
+    <article class="help">
+        <h1>How to play</h1>
+        <p>
+            <ul>
+                <li>   Find 1 or more friends</li>
+                <li>   everybody has 3 lives</li>
+                <li>   Hit eachother with your dimensional mirror ball (press attack to throw)</li>
+                <li> You can charge your attack for a bigger projectile</li>
+
+            </ul>
+        </p>
+        <h1>Game supports GameControllers & 1 Keyboard</h1>
+        <p>
+            Default keyboard bindings are <ul>
+                <li>x to attack/ok</li>
+                <li>z to jump</li>
+                <li>leftarrow for left</li>
+                <li>rightarrow for right</li>
+            </ul>
+        </p>
+        <p>
+            To connect a gamepad:
+            <ul>
+                <li>connect it to windows</li>
+                <li>then press a button</li>
+                <li>if this is a new controller please configure it first by clicking the controllers button</li>
+                <li>the game saves the configuration</li>
+            </ul>
+    </article>
+</body>
+</html>

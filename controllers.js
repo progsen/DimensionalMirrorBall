@@ -113,7 +113,10 @@ class ControllerSetupLogic
     {
         let scope = this;
         this.game = game;
-        this.setupControllerUI = [new UIClickable(this.game.screen.w - 100, this.game.screen.h - 50, 100, 50, null, "gray", "Back", function () { scope.game.GotoMatchSetup(); })
+        this.setupControllerUI = [new UIClickable(this.game.screen.w - 100, this.game.screen.h - 50, 100, 50, null, "gray", "Back", function ()
+        {
+            scope.ExitScreen();
+        })
         ];
         let keybinds = ["Attack", "Jump", "Up", "Down", "Left", "Right"];
         for (var i = 0; i < keybinds.length; i++)
@@ -135,6 +138,13 @@ class ControllerSetupLogic
         this.SetupGamePads();
     }
 
+    ExitScreen()
+    {
+        this.setupI = -1;
+        this.setupbuttontimeout = -1;
+        this.SetCurrentController(null);
+        this.game.GotoMatchSetup();
+    }
     TryReconnect(pad)
     {
         for (var pi = 0; pi < this.game.players.length; pi++)
@@ -211,19 +221,49 @@ class ControllerSetupLogic
 
         }
     }
+    GetGamepadUpdateBecauseEdgeSUCKS(playerPad)
+    {
+        let gps = navigator.getGamepads();
+
+        for (var i = 0; i < gps.length; i++)
+        {
+            if (gps[i] != null)
+            {
+                if (gps[i].id == playerPad.gp.id)
+                {
+                    playerPad.gp = gps[i];
+                    break;
+                }
+            }
+
+        }
+    }
     Logic()
     {
+
+
         if (this.setupI > -1)
         {
             this.UpdateBindDisplay();
 
-            let gp = this.currentPad;
-            console.log("BindCurrentButton");
+            this.GetGamepadUpdateBecauseEdgeSUCKS(this.currentPad);
+            //console.log("BindCurrentButton");
             this.BindCurrentButton();
         }
     }
     BindCurrentButton()
     {
+        //let buttons = "setupbuttontimeout " + this.setupbuttontimeout + " ";
+        //for (var bi = 0; bi < this.currentPad.gp.buttons.length; bi++)
+        //{
+        //    buttons += this.currentPad.gp.buttons[bi].pressed + ",";
+        //}
+        //buttons += " axis ";
+        //for (var bi = 0; bi < this.currentPad.gp.axes.length; bi++)
+        //{
+        //    buttons += this.currentPad.gp.axes[bi] + ",";
+        //}
+        //console.log(buttons)
         if (this.setupbuttontimeout != -1 && this.currentPad.gp.buttons[this.setupbuttontimeout].pressed)
         {
             return;
@@ -251,7 +291,7 @@ class ControllerSetupLogic
             this.currentPad.setupComplete = true;
             let json = JSON.stringify(this.currentPad.buttons);
             localStorage.setItem("gamepadcfg" + this.currentPad.gp.id, json);
-            this.UpdateBindDisplay();
+            this.SetCurrentController(null);
         }
     }
     AddControllerToUi(pad)
@@ -270,7 +310,11 @@ class ControllerSetupLogic
     }
     UpdateBindDisplay()
     {
+        if (this.currentPad ==null)
+        {
+            return;
 
+        }
         for (var i = 0; i < this.currentPad.buttons.length; i++)
         {
             let ui = this.setupControllerUI[this.bindingUiStart + i];
@@ -286,16 +330,15 @@ class ControllerSetupLogic
     }
     SetCurrentController(pad)
     {
+        this.UpdateBindDisplay();
         this.currentPad = pad;
         for (var i = 0; i < this.setupControllerDynaUI.length; i++)
         {
             this.setupControllerDynaUI[i].color = "gray";
-            if (this.setupControllerDynaUI[i].text == pad.gp.id)
+            if (pad != null && this.setupControllerDynaUI[i].text == pad.gp.id)
             {
                 this.setupControllerDynaUI[i].color = "orange";
-
             }
-
         }
         this.UpdateBindDisplay();
     }

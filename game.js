@@ -617,6 +617,11 @@ class Game
     }
     logic()
     {
+        //edge hack because it doesn't update the damn controller state unless you get them via navigator.getgamepads
+        for (var i = 0; i < this.players.length; i++)
+        {
+            this.controllerSetupLogic.GetGamepadUpdateBecauseEdgeSUCKS(this.players[i].gamepad);
+        }
         switch (this.state)
         {
             case startScreen: this.startLogic(); this.renderer.renderStart(); break;
